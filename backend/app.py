@@ -21,7 +21,11 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'healthpulse-dev-secret-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///healthpulse.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins=[
+    'https://health-pulse-ai-7sw4.vercel.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+])
 db.init_app(app)
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
