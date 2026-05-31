@@ -1,0 +1,2494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HealthPulse — AI-Powered Health Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #050a12;
+  --surface: #0d1526;
+  --surface2: #111d35;
+  --surface3: #162040;
+  --border: rgba(99,179,255,0.12);
+  --border2: rgba(99,179,255,0.22);
+  --accent: #3b9eff;
+  --accent2: #00e5c8;
+  --accent3: #ff6b9d;
+  --warn: #ffb84d;
+  --danger: #ff4f6a;
+  --success: #00d68f;
+  --text: #e8f0ff;
+  --text2: #7a9cc7;
+  --text3: #4a6490;
+  --low: #00d68f;
+  --moderate: #ffb84d;
+  --high: #ff6b2b;
+  --critical: #ff2d55;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 8px 40px rgba(0,0,0,0.4);
+  --glow: 0 0 30px rgba(59,158,255,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+
+/* === LAYOUT === */
+#app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 100;
+  transition: transform 0.3s ease;
+}
+.main-content {
+  flex: 1;
+  margin-left: 260px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+/* === LOGO === */
+.logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  display: flex; align-items: center; gap: 12px;
+}
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 20px rgba(59,158,255,0.3);
+}
+.logo-text h1 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff, var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.logo-text p {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 1px;
+}
+/* === NAV === */
+.nav-section { padding: 12px 16px 4px; }
+.nav-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text3);
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text2);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-bottom: 2px;
+  position: relative;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(59,158,255,0.15), rgba(0,229,200,0.08));
+  color: var(--accent);
+  border: 1px solid rgba(59,158,255,0.2);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 20px;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+.nav-icon { font-size: 18px; width: 24px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--accent);
+  color: white;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+/* === USER CARD === */
+.user-card {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.user-info {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.user-avatar {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.user-details h4 { font-size: 13px; font-weight: 600; }
+.user-details p { font-size: 11px; color: var(--text3); }
+.logout-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+.logout-btn:hover { background: rgba(255,79,106,0.1); border-color: var(--danger); color: var(--danger); }
+/* === TOPBAR === */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+.topbar-subtitle { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+  text-decoration: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #2980d9);
+  color: white;
+  box-shadow: 0 4px 15px rgba(59,158,255,0.25);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,158,255,0.35); }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--surface3); }
+.btn-danger {
+  background: rgba(255,79,106,0.15);
+  color: var(--danger);
+  border: 1px solid rgba(255,79,106,0.3);
+}
+.btn-danger:hover { background: rgba(255,79,106,0.25); }
+.btn-success {
+  background: rgba(0,214,143,0.15);
+  color: var(--success);
+  border: 1px solid rgba(0,214,143,0.3);
+}
+.btn-success:hover { background: rgba(0,214,143,0.25); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+/* === PAGE CONTENT === */
+.page { padding: 32px; flex: 1; }
+.page-hidden { display: none; }
+/* === CARDS === */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+}
+.card-subtitle { font-size: 12px; color: var(--text3); margin-top: 2px; }
+/* === STAT CARDS === */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.stat-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: var(--glow); }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  opacity: 0.06;
+  transform: translate(30%, -30%);
+}
+.stat-card.blue::before { background: var(--accent); }
+.stat-card.green::before { background: var(--success); }
+.stat-card.orange::before { background: var(--warn); }
+.stat-card.pink::before { background: var(--accent3); }
+.stat-icon {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label { font-size: 13px; color: var(--text2); }
+.stat-change {
+  font-size: 11px;
+  margin-top: 8px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  display: inline-block;
+}
+.stat-change.up { background: rgba(0,214,143,0.15); color: var(--success); }
+.stat-change.down { background: rgba(255,79,106,0.15); color: var(--danger); }
+/* === CHARTS GRID === */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.charts-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.chart-container { position: relative; height: 220px; }
+/* === RISK BADGE === */
+.risk-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.risk-Low { background: rgba(0,214,143,0.15); color: var(--low); border: 1px solid rgba(0,214,143,0.3); }
+.risk-Moderate { background: rgba(255,184,77,0.15); color: var(--moderate); border: 1px solid rgba(255,184,77,0.3); }
+.risk-High { background: rgba(255,107,43,0.15); color: var(--high); border: 1px solid rgba(255,107,43,0.3); }
+.risk-Critical { background: rgba(255,45,85,0.15); color: var(--critical); border: 1px solid rgba(255,45,85,0.3); }
+/* === TABLE === */
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; }
+thead { background: var(--surface2); }
+th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text3);
+  white-space: nowrap;
+  cursor: pointer;
+}
+th:hover { color: var(--text); }
+td {
+  padding: 14px 16px;
+  font-size: 13px;
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+tr:hover td { background: rgba(59,158,255,0.03); }
+.patient-name { font-weight: 600; font-size: 14px; }
+.patient-email { font-size: 11px; color: var(--text3); }
+.risk-score-bar {
+  display: flex; align-items: center; gap: 8px;
+}
+.bar-track {
+  flex: 1; height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 60px;
+}
+.bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+.bar-fill.low { background: var(--low); }
+.bar-fill.moderate { background: var(--moderate); }
+.bar-fill.high { background: var(--high); }
+.bar-fill.critical { background: var(--critical); }
+.action-btns { display: flex; gap: 6px; }
+/* === SEARCH & FILTERS === */
+.toolbar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-box {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  flex: 1; min-width: 200px;
+}
+.search-box input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font-body);
+  width: 100%;
+}
+.search-box input::placeholder { color: var(--text3); }
+.filter-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font-body);
+  outline: none;
+  cursor: pointer;
+}
+/* === MODAL === */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.modal-overlay.hidden { display: none; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  width: 100%; max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+.modal-header {
+  padding: 28px 28px 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+.modal-close {
+  width: 32px; height: 32px;
+  background: var(--surface2);
+  border: none;
+  border-radius: 8px;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--surface3); color: var(--text); }
+.modal-body { padding: 24px 28px; }
+.modal-footer {
+  padding: 0 28px 28px;
+  display: flex; gap: 12px; justify-content: flex-end;
+}
+/* === FORM === */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.form-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,158,255,0.1); }
+.form-input.error { border-color: var(--danger); }
+.form-error { font-size: 11px; color: var(--danger); }
+.form-hint { font-size: 11px; color: var(--text3); }
+.form-divider {
+  grid-column: 1/-1;
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 4px 0;
+}
+/* === NORMAL RANGES === */
+.normal-ranges {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.8;
+}
+.normal-ranges b { color: var(--accent2); }
+/* === REMARKS BOX === */
+.remarks-box {
+  background: linear-gradient(135deg, rgba(59,158,255,0.08), rgba(0,229,200,0.05));
+  border: 1px solid rgba(59,158,255,0.2);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  min-height: 80px;
+  font-style: italic;
+}
+.ai-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent2);
+  margin-bottom: 8px;
+}
+.ai-dot {
+  width: 6px; height: 6px;
+  background: var(--accent2);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* === PAGINATION === */
+.pagination {
+  display: flex; align-items: center; gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
+}
+.page-btn {
+  width: 36px; height: 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font-body);
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.page-btn:hover { background: var(--surface2); color: var(--text); }
+.page-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* === AUTH PAGES === */
+.auth-page {
+  min-height: 100vh;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.auth-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(59,158,255,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(0,229,200,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, rgba(255,107,157,0.04) 0%, transparent 50%);
+  z-index: 1;
+}
+.auth-grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.3;
+  z-index: 1;
+}
+.auth-form-side {
+  flex: 1;
+  max-width: 480px;
+  min-width: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: var(--surface);
+  border-right: 1px solid var(--border2);
+  position: relative;
+  z-index: 10;
+  box-shadow: 10px 0 40px rgba(0,0,0,0.3);
+}
+@media (max-width: 900px) {
+  .auth-form-side {
+    max-width: 100%;
+    border-right: none;
+    box-shadow: none;
+  }
+}
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  position: relative;
+  z-index: 1;
+}
+.auth-logo { text-align: center; margin-bottom: 36px; }
+.auth-logo-icon {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 16px;
+  box-shadow: 0 10px 40px rgba(59,158,255,0.3);
+}
+.auth-logo h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff, var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.auth-logo p { font-size: 14px; color: var(--text3); margin-top: 6px; }
+.auth-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+.auth-subtitle { font-size: 14px; color: var(--text2); margin-bottom: 32px; text-align: center; }
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.auth-btn {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, var(--accent), #2980d9);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  box-shadow: 0 4px 20px rgba(59,158,255,0.3);
+}
+.auth-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,158,255,0.4); }
+.auth-switch { text-align: center; font-size: 14px; color: var(--text2); margin-top: 20px; }
+.auth-switch a { color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; }
+.auth-switch a:hover { text-decoration: underline; }
+.auth-demo {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.8;
+}
+.auth-demo strong { color: var(--accent2); }
+
+/* === AUTH DESIGN SIDE === */
+.auth-design-side {
+  flex: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: radial-gradient(circle at 40% 40%, rgba(59, 158, 255, 0.08) 0%, transparent 60%);
+  padding: 60px;
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  .auth-design-side {
+    display: none;
+  }
+}
+.auth-design-content {
+  max-width: 540px;
+  width: 100%;
+  position: relative;
+  z-index: 5;
+}
+.promo-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: rgba(59, 158, 255, 0.1);
+  border: 1px solid rgba(59, 158, 255, 0.2);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+.promo-text h2 {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #fff 40%, var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+.promo-text p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text2);
+  margin-bottom: 40px;
+}
+
+/* Glass visual mockup style */
+.visual-mockup {
+  background: rgba(13, 21, 38, 0.6);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+.mockup-header {
+  background: rgba(13, 21, 38, 0.8);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mockup-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.mockup-dot.red { background: var(--danger); }
+.mockup-dot.yellow { background: var(--warn); }
+.mockup-dot.green { background: var(--success); }
+.mockup-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  margin-left: 12px;
+}
+.mockup-body {
+  padding: 24px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text);
+}
+.mockup-line {
+  white-space: nowrap;
+}
+.c-blue { color: var(--accent); }
+.c-green { color: var(--success); }
+.c-yellow { color: var(--accent2); }
+.c-orange { color: var(--warn); }
+.c-pink { color: var(--accent3); }
+
+.mockup-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.m-stat {
+  display: flex;
+  flex-direction: column;
+}
+.m-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent2);
+}
+.m-lbl {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+
+/* Glowing background spheres */
+.glow-sphere {
+  position: absolute;
+  top: 20%;
+  right: 10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 229, 200, 0.08) 0%, transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+.glow-sphere-2 {
+  position: absolute;
+  bottom: 10%;
+  left: 20%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(59, 158, 255, 0.06) 0%, transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+/* === TOAST === */
+.toast-container {
+  position: fixed;
+  top: 20px; right: 20px;
+  z-index: 1000;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  animation: slideIn 0.3s ease;
+  max-width: 360px;
+}
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.toast.success { background: #0d2b1f; border: 1px solid rgba(0,214,143,0.4); color: var(--success); }
+.toast.error { background: #2b0d15; border: 1px solid rgba(255,79,106,0.4); color: var(--danger); }
+.toast.info { background: #0d1e2b; border: 1px solid rgba(59,158,255,0.4); color: var(--accent); }
+/* === LOADER === */
+.loader {
+  display: flex; align-items: center; justify-content: center;
+  height: 200px;
+  gap: 12px; color: var(--text3);
+  font-size: 14px;
+}
+.spinner {
+  width: 24px; height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+/* === EMPTY STATE === */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text2);
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.empty h3 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
+.empty p { font-size: 14px; }
+/* === DETAIL VIEW === */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.detail-item {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-align: center;
+}
+.detail-item .label { font-size: 11px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.detail-item .val {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+.detail-item .unit { font-size: 11px; color: var(--text3); margin-top: 2px; }
+/* === PROGRESS RING === */
+.progress-ring-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px;
+}
+.ring-label { font-size: 13px; color: var(--text2); }
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .charts-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .page { padding: 16px; }
+  .topbar { padding: 0 16px; }
+}
+/* === ABOUT PAGE === */
+.about-hero {
+  background: linear-gradient(135deg, rgba(59,158,255,0.1), rgba(0,229,200,0.05));
+  border: 1px solid rgba(59,158,255,0.2);
+  border-radius: var(--radius);
+  padding: 48px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.about-hero h1 {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff, var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+}
+.about-hero p { font-size: 16px; color: var(--text2); max-width: 600px; margin: 0 auto; }
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: all 0.3s;
+}
+.feature-card:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: var(--glow); }
+.feature-icon { font-size: 32px; margin-bottom: 14px; }
+.feature-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.feature-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+/* === SETTINGS PAGE === */
+.settings-section { margin-bottom: 32px; }
+.settings-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+.toggle {
+  width: 44px; height: 24px;
+  background: var(--surface3);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform 0.3s;
+}
+.toggle.on::after { transform: translateX(20px); }
+/* === REPORTS PAGE === */
+.reports-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+}
+.report-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.report-icon { font-size: 40px; margin-bottom: 14px; }
+.report-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.report-desc { font-size: 13px; color: var(--text2); }
+/* === ALERTS PAGE === */
+.alert-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+.alert-item:hover { border-color: var(--border2); }
+.alert-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.alert-content { flex: 1; }
+.alert-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.alert-time { font-size: 11px; color: var(--text3); }
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 3px 8px;
+  background: var(--surface2);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text2);
+  font-family: var(--font-mono);
+}
+</style>
+</head>
+<body>
+
+<div id="toast-container" class="toast-container"></div>
+<div id="app"></div>
+
+<script>
+// ============================================================
+// STATE MANAGEMENT
+// ============================================================
+const API = 'http://localhost:5000/api';
+let state = {
+  page: 'login',
+  user: null,
+  patients: [],
+  dashStats: null,
+  loading: false,
+  totalPatients: 0,
+  totalPages: 1,
+  currentPage: 1,
+  search: '',
+  riskFilter: '',
+  sortBy: 'created_at',
+  sortDir: 'desc',
+  editPatient: null,
+  viewPatient: null,
+  showAddModal: false,
+  showEditModal: false,
+  showViewModal: false,
+  showDeleteModal: false,
+  deleteId: null,
+  charts: {},
+  alerts: [
+    { id:1, type:'critical', title:'Frank Wilson has Critical risk score (70/100)', time:'2 hours ago', patient:'Frank Wilson' },
+    { id:2, type:'high', title:'David Brown requires urgent physician review', time:'3 hours ago', patient:'David Brown' },
+    { id:3, type:'moderate', title:'Henry Taylor – cholesterol borderline high (225 mg/dL)', time:'5 hours ago', patient:'Henry Taylor' },
+    { id:4, type:'info', title:'10 patients seeded to database on startup', time:'Today', patient:null },
+    { id:5, type:'success', title:'Alice Johnson – all values within normal range', time:'Yesterday', patient:'Alice Johnson' },
+  ]
+};
+
+// ============================================================
+// API HELPERS
+// ============================================================
+async function api(method, path, body) {
+  try {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(API + path, opts);
+    const data = await res.json();
+    if (!res.ok) throw data;
+    return data;
+  } catch(e) {
+    throw e;
+  }
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type='info') {
+  const icons = { success:'✅', error:'❌', info:'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ============================================================
+// ROUTER / RENDER
+// ============================================================
+function navigate(page) {
+  state.page = page;
+  render();
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const isAuth = state.user !== null;
+  const authPages = ['login','signup'];
+
+  if (!isAuth && !authPages.includes(state.page)) {
+    state.page = 'login';
+  }
+  if (isAuth && authPages.includes(state.page)) {
+    state.page = 'dashboard';
+  }
+
+  if (!isAuth) {
+    app.innerHTML = state.page === 'login' ? renderLogin() : renderSignup();
+    attachAuthEvents();
+    return;
+  }
+
+  app.innerHTML = `
+    ${renderSidebar()}
+    <div class="main-content">
+      ${renderTopbar()}
+      <div id="page-content">
+        ${renderPage()}
+      </div>
+    </div>
+    ${renderModals()}
+  `;
+  attachEvents();
+  renderCharts();
+}
+
+// ============================================================
+// AUTH PAGES
+// ============================================================
+function renderLogin() {
+  return `
+  <div class="auth-page">
+    <div class="auth-bg"></div>
+    <div class="auth-grid"></div>
+    
+    <div class="auth-form-side">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="auth-logo-icon">💊</div>
+          <h1>HealthPulse</h1>
+          <p>AI-Powered Health Intelligence Platform</p>
+        </div>
+        <h2 class="auth-title">Welcome back</h2>
+        <p class="auth-subtitle">Sign in to access your medical dashboard</p>
+        <div class="auth-form">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input id="login-email" type="email" class="form-input" placeholder="doctor@healthpulse.com" value="admin@healthpulse.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input id="login-pass" type="password" class="form-input" placeholder="Enter your password" value="Admin@123">
+          </div>
+          <div id="login-error" style="color:var(--danger);font-size:13px;display:none;"></div>
+          <button class="auth-btn" onclick="doLogin()">Sign In →</button>
+        </div>
+        <div class="auth-demo">
+          <strong>Demo Credentials:</strong><br>
+          Admin: admin@healthpulse.com / Admin@123<br>
+          Doctor: doctor@healthpulse.com / Doctor@123
+        </div>
+        <p class="auth-switch">New to HealthPulse? <a onclick="navigate('signup')">Create an account</a></p>
+      </div>
+    </div>
+    
+    <div class="auth-design-side">
+      <div class="glow-sphere"></div>
+      <div class="glow-sphere-2"></div>
+      <div class="auth-design-content">
+        <span class="promo-badge">🤖 AI-POWERED PLATFORM</span>
+        <div class="promo-text">
+          <h2>Predictive Health <br>Analytics & Insights</h2>
+          <p>Seamlessly track patient biomarkers, generate automated Claude AI health assessments, and visualize critical medical metrics in a secure clinical workspace.</p>
+        </div>
+        <div class="visual-mockup">
+          <div class="mockup-header">
+            <div class="mockup-dot red"></div>
+            <div class="mockup-dot yellow"></div>
+            <div class="mockup-dot green"></div>
+            <span class="mockup-title">healthpulse_analytics_model.py</span>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-line"><span class="c-blue">import</span> anthropic_sdk</div>
+            <div class="mockup-line"><span class="c-green">def</span> <span class="c-yellow">analyze_biomarkers</span>(glucose, cholesterol):</div>
+            <div class="mockup-line">&nbsp;&nbsp;&nbsp;&nbsp;risk_score = (glucose * <span class="c-orange">0.45</span>) + (cholesterol * <span class="c-orange">0.35</span>)</div>
+            <div class="mockup-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-blue">return</span> { <span class="c-pink">"status"</span>: <span class="c-pink">"Critical"</span> <span class="c-blue">if</span> risk_score > <span class="c-orange">75</span> <span class="c-blue">else</span> <span class="c-pink">"Optimal"</span> }</div>
+            
+            <div class="mockup-stats">
+              <div class="m-stat">
+                <span class="m-val">99.4%</span>
+                <span class="m-lbl">Model Precision</span>
+              </div>
+              <div class="m-stat">
+                <span class="m-val">&lt; 1.2s</span>
+                <span class="m-lbl">AI Inference</span>
+              </div>
+              <div class="m-stat">
+                <span class="m-val">100%</span>
+                <span class="m-lbl">HIPAA Safe</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSignup() {
+  return `
+  <div class="auth-page">
+    <div class="auth-bg"></div>
+    <div class="auth-grid"></div>
+    
+    <div class="auth-form-side">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="auth-logo-icon">💊</div>
+          <h1>HealthPulse</h1>
+          <p>AI-Powered Health Intelligence Platform</p>
+        </div>
+        <h2 class="auth-title">Create account</h2>
+        <p class="auth-subtitle">Join HealthPulse to manage patient health data</p>
+        <div class="auth-form">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input id="reg-name" type="text" class="form-input" placeholder="Dr. Your Name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input id="reg-email" type="email" class="form-input" placeholder="you@hospital.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input id="reg-pass" type="password" class="form-input" placeholder="Min. 6 characters">
+          </div>
+          <div id="reg-error" style="color:var(--danger);font-size:13px;display:none;"></div>
+          <button class="auth-btn" onclick="doRegister()">Create Account →</button>
+        </div>
+        <p class="auth-switch">Already have an account? <a onclick="navigate('login')">Sign in</a></p>
+      </div>
+    </div>
+    
+    <div class="auth-design-side">
+      <div class="glow-sphere"></div>
+      <div class="glow-sphere-2"></div>
+      <div class="auth-design-content">
+        <span class="promo-badge">🤖 AI-POWERED PLATFORM</span>
+        <div class="promo-text">
+          <h2>Predictive Health <br>Analytics & Insights</h2>
+          <p>Seamlessly track patient biomarkers, generate automated Claude AI health assessments, and visualize critical medical metrics in a secure clinical workspace.</p>
+        </div>
+        <div class="visual-mockup">
+          <div class="mockup-header">
+            <div class="mockup-dot red"></div>
+            <div class="mockup-dot yellow"></div>
+            <div class="mockup-dot green"></div>
+            <span class="mockup-title">healthpulse_analytics_model.py</span>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-line"><span class="c-blue">import</span> anthropic_sdk</div>
+            <div class="mockup-line"><span class="c-green">def</span> <span class="c-yellow">analyze_biomarkers</span>(glucose, cholesterol):</div>
+            <div class="mockup-line">&nbsp;&nbsp;&nbsp;&nbsp;risk_score = (glucose * <span class="c-orange">0.45</span>) + (cholesterol * <span class="c-orange">0.35</span>)</div>
+            <div class="mockup-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-blue">return</span> { <span class="c-pink">"status"</span>: <span class="c-pink">"Critical"</span> <span class="c-blue">if</span> risk_score > <span class="c-orange">75</span> <span class="c-blue">else</span> <span class="c-pink">"Optimal"</span> }</div>
+            
+            <div class="mockup-stats">
+              <div class="m-stat">
+                <span class="m-val">99.4%</span>
+                <span class="m-lbl">Model Precision</span>
+              </div>
+              <div class="m-stat">
+                <span class="m-val">&lt; 1.2s</span>
+                <span class="m-lbl">AI Inference</span>
+              </div>
+              <div class="m-stat">
+                <span class="m-val">100%</span>
+                <span class="m-lbl">HIPAA Safe</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function attachAuthEvents() {}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  try {
+    const data = await api('POST', '/auth/login', { email, password: pass });
+    state.user = data.user;
+    toast('Welcome back, ' + data.user.name, 'success');
+    navigate('dashboard');
+    loadDashboard();
+  } catch(e) {
+    errEl.textContent = e.error || 'Login failed';
+    errEl.style.display = 'block';
+  }
+}
+
+async function doRegister() {
+  const name = document.getElementById('reg-name').value;
+  const email = document.getElementById('reg-email').value;
+  const pass = document.getElementById('reg-pass').value;
+  const errEl = document.getElementById('reg-error');
+  errEl.style.display = 'none';
+  try {
+    const data = await api('POST', '/auth/register', { name, email, password: pass });
+    state.user = data.user;
+    toast('Account created! Welcome to HealthPulse', 'success');
+    navigate('dashboard');
+    loadDashboard();
+  } catch(e) {
+    errEl.textContent = e.error || 'Registration failed';
+    errEl.style.display = 'block';
+  }
+}
+
+async function doLogout() {
+  await api('POST', '/auth/logout');
+  state.user = null;
+  toast('Signed out successfully', 'info');
+  navigate('login');
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function renderSidebar() {
+  const navItems = [
+    { page:'dashboard', icon:'📊', label:'Dashboard' },
+    { page:'patients', icon:'🧑‍⚕️', label:'Patients', badge: state.totalPatients || '' },
+    { page:'analytics', icon:'📈', label:'Analytics' },
+    { page:'alerts', icon:'🔔', label:'Alerts', badge: state.alerts.filter(a=>a.type==='critical'||a.type==='high').length },
+    { page:'reports', icon:'📋', label:'Reports' },
+    { page:'about', icon:'ℹ️', label:'About' },
+    { page:'settings', icon:'⚙️', label:'Settings' },
+  ];
+
+  return `
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <div class="logo-icon">💊</div>
+        <div class="logo-text">
+          <h1>HealthPulse</h1>
+          <p>AI Health Intelligence</p>
+        </div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-label">Main Menu</div>
+        ${navItems.slice(0,5).map(i => `
+          <div class="nav-item ${state.page===i.page?'active':''}" onclick="navigate('${i.page}')">
+            <span class="nav-icon">${i.icon}</span>
+            <span>${i.label}</span>
+            ${i.badge ? `<span class="nav-badge">${i.badge}</span>` : ''}
+          </div>
+        `).join('')}
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">System</div>
+        ${navItems.slice(5).map(i => `
+          <div class="nav-item ${state.page===i.page?'active':''}" onclick="navigate('${i.page}')">
+            <span class="nav-icon">${i.icon}</span>
+            <span>${i.label}</span>
+          </div>
+        `).join('')}
+      </div>
+    </nav>
+    <div class="user-card">
+      <div class="user-info">
+        <div class="user-avatar">${state.user?.avatar || '👨‍⚕️'}</div>
+        <div class="user-details">
+          <h4>${state.user?.name || 'User'}</h4>
+          <p>${state.user?.role || 'Doctor'}</p>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">→ Sign Out</button>
+    </div>
+  </aside>`;
+}
+
+// ============================================================
+// TOPBAR
+// ============================================================
+const pageInfo = {
+  dashboard: { title: 'Dashboard', subtitle: 'AI-powered health analytics overview' },
+  patients: { title: 'Patient Records', subtitle: 'Manage and analyze patient health data' },
+  analytics: { title: 'Analytics', subtitle: 'In-depth health metrics & trends' },
+  alerts: { title: 'Health Alerts', subtitle: 'Critical patient notifications' },
+  reports: { title: 'Reports', subtitle: 'Generate and export health reports' },
+  about: { title: 'About HealthPulse', subtitle: 'Platform overview and features' },
+  settings: { title: 'Settings', subtitle: 'Configure your preferences' },
+};
+
+function renderTopbar() {
+  const info = pageInfo[state.page] || {};
+  return `
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">${info.title || ''}</div>
+      <div class="topbar-subtitle">${info.subtitle || ''}</div>
+    </div>
+    <div class="topbar-actions">
+      ${state.page === 'patients' ? `<button class="btn btn-primary" onclick="openAddModal()">+ Add Patient</button>` : ''}
+      <div style="width:36px;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;" title="Refresh" onclick="refreshPage()">🔄</div>
+    </div>
+  </header>`;
+}
+
+function refreshPage() {
+  if (state.page === 'dashboard') loadDashboard();
+  if (state.page === 'patients') loadPatients();
+  if (state.page === 'analytics') loadDashboard();
+  toast('Refreshed', 'info');
+}
+
+// ============================================================
+// PAGE ROUTING
+// ============================================================
+function renderPage() {
+  switch(state.page) {
+    case 'dashboard': return renderDashboard();
+    case 'patients': return renderPatients();
+    case 'analytics': return renderAnalytics();
+    case 'alerts': return renderAlerts();
+    case 'reports': return renderReports();
+    case 'about': return renderAbout();
+    case 'settings': return renderSettings();
+    default: return renderDashboard();
+  }
+}
+
+// ============================================================
+// DASHBOARD PAGE
+// ============================================================
+function renderDashboard() {
+  const s = state.dashStats;
+  if (!s) return `<div class="page"><div class="loader"><div class="spinner"></div> Loading dashboard...</div></div>`;
+
+  const risk = s.risk_distribution || {};
+  const total = s.total_patients || 0;
+  const avgs = s.averages || {};
+
+  return `
+  <div class="page">
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">${total}</div>
+        <div class="stat-label">Total Patients</div>
+        <div class="stat-change up">↑ ${s.recent_admissions} this week</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value">${risk.Low || 0}</div>
+        <div class="stat-label">Low Risk</div>
+        <div class="stat-change up">↑ ${total ? Math.round((risk.Low||0)/total*100) : 0}% of total</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-value">${(risk.High||0)+(risk.Critical||0)}</div>
+        <div class="stat-label">High/Critical Risk</div>
+        <div class="stat-change down">Requires attention</div>
+      </div>
+      <div class="stat-card pink">
+        <div class="stat-icon">🧬</div>
+        <div class="stat-value">${avgs.glucose || 0}</div>
+        <div class="stat-label">Avg Glucose (mg/dL)</div>
+        <div class="stat-change ${avgs.glucose > 100 ? 'down' : 'up'}">
+          ${avgs.glucose > 100 ? '↑ Above normal' : '↓ Normal range'}
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Risk Distribution</div><div class="card-subtitle">Patient risk level breakdown</div></div>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-risk"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Monthly Admissions</div><div class="card-subtitle">Patient intake over 6 months</div></div>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-monthly"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Glucose Distribution</div><div class="card-subtitle">Blood glucose range analysis</div></div>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-glucose"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Cholesterol Levels</div><div class="card-subtitle">Lipid profile distribution</div></div>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-chol"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">Recent Patients</div><div class="card-subtitle">Latest admissions with AI analysis</div></div>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('patients')">View All →</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Glucose</th>
+              <th>Haemoglobin</th>
+              <th>Cholesterol</th>
+              <th>Risk Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(s.recent_patients||[]).map(p => `
+              <tr style="cursor:pointer" onclick="viewPatient(${p.id})">
+                <td>
+                  <div class="patient-name">${p.full_name}</div>
+                  <div class="patient-email">${p.email}</div>
+                </td>
+                <td><span class="tag">${p.glucose} mg/dL</span></td>
+                <td><span class="tag">${p.haemoglobin} g/dL</span></td>
+                <td><span class="tag">${p.cholesterol} mg/dL</span></td>
+                <td><span class="risk-badge risk-${p.risk_level}">● ${p.risk_level}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// PATIENTS PAGE
+// ============================================================
+function renderPatients() {
+  return `
+  <div class="page">
+    <div class="toolbar">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="Search by name or email..." id="search-input" value="${state.search}" oninput="debounceSearch(this.value)">
+      </div>
+      <select class="filter-select" id="risk-filter" onchange="filterByRisk(this.value)">
+        <option value="">All Risk Levels</option>
+        <option value="Low" ${state.riskFilter==='Low'?'selected':''}>🟢 Low</option>
+        <option value="Moderate" ${state.riskFilter==='Moderate'?'selected':''}>🟡 Moderate</option>
+        <option value="High" ${state.riskFilter==='High'?'selected':''}>🟠 High</option>
+        <option value="Critical" ${state.riskFilter==='Critical'?'selected':''}>🔴 Critical</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+
+    ${state.loading ? `<div class="loader"><div class="spinner"></div> Loading patients...</div>` : ''}
+
+    ${!state.loading && state.patients.length === 0 ? `
+      <div class="empty">
+        <div class="empty-icon">🏥</div>
+        <h3>No patients found</h3>
+        <p>Try adjusting your search or add a new patient</p>
+        <br><button class="btn btn-primary" onclick="openAddModal()">+ Add First Patient</button>
+      </div>
+    ` : ''}
+
+    ${!state.loading && state.patients.length > 0 ? `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortBy('full_name')">Name ${state.sortBy==='full_name'?(state.sortDir==='asc'?'↑':'↓'):''}</th>
+              <th onclick="sortBy('date_of_birth')">Age</th>
+              <th>Glucose <small style="color:var(--text3)">(mg/dL)</small></th>
+              <th>Hgb <small style="color:var(--text3)">(g/dL)</small></th>
+              <th>Chol <small style="color:var(--text3)">(mg/dL)</small></th>
+              <th onclick="sortBy('risk_score')">Risk Score</th>
+              <th>Risk Level</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${state.patients.map(p => {
+              const scoreClass = p.risk_level==='Low'?'low':p.risk_level==='Moderate'?'moderate':p.risk_level==='High'?'high':'critical';
+              return `
+              <tr>
+                <td>
+                  <div class="patient-name" style="cursor:pointer;color:var(--accent)" onclick="viewPatient(${p.id})">${p.full_name}</div>
+                  <div class="patient-email">${p.email}</div>
+                </td>
+                <td>${p.age} yrs</td>
+                <td><span class="tag" style="color:${p.glucose>125?'var(--danger)':p.glucose>99?'var(--warn)':'var(--success)'}">${p.glucose}</span></td>
+                <td><span class="tag" style="color:${p.haemoglobin<12?'var(--danger)':p.haemoglobin<13?'var(--warn)':'var(--success)'}">${p.haemoglobin}</span></td>
+                <td><span class="tag" style="color:${p.cholesterol>239?'var(--danger)':p.cholesterol>199?'var(--warn)':'var(--success)'}">${p.cholesterol}</span></td>
+                <td>
+                  <div class="risk-score-bar">
+                    <div class="bar-track">
+                      <div class="bar-fill ${scoreClass}" style="width:${p.risk_score}%"></div>
+                    </div>
+                    <span style="font-family:var(--font-mono);font-size:12px;color:var(--text2)">${Math.round(p.risk_score)}</span>
+                  </div>
+                </td>
+                <td><span class="risk-badge risk-${p.risk_level}">● ${p.risk_level}</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn btn-secondary btn-sm" onclick="viewPatient(${p.id})" title="View">👁</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openEditModal(${p.id})" title="Edit">✏️</button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmDelete(${p.id})" title="Delete">🗑</button>
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button class="page-btn" onclick="goPage(${state.currentPage-1})" ${state.currentPage<=1?'disabled':''}>←</button>
+        ${Array.from({length:state.totalPages},(_,i)=>i+1).map(n=>`
+          <button class="page-btn ${n===state.currentPage?'active':''}" onclick="goPage(${n})">${n}</button>
+        `).join('')}
+        <button class="page-btn" onclick="goPage(${state.currentPage+1})" ${state.currentPage>=state.totalPages?'disabled':''}>→</button>
+        <span style="font-size:13px;color:var(--text3);margin-left:8px">${state.totalPatients} total</span>
+      </div>
+    ` : ''}
+  </div>`;
+}
+
+// ============================================================
+// ANALYTICS PAGE
+// ============================================================
+function renderAnalytics() {
+  const s = state.dashStats;
+  if (!s) return `<div class="page"><div class="loader"><div class="spinner"></div> Loading...</div></div>`;
+  const avgs = s.averages || {};
+  return `
+  <div class="page">
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-icon">🩸</div>
+        <div class="stat-value">${avgs.glucose}</div>
+        <div class="stat-label">Avg Glucose (mg/dL)</div>
+        <div class="stat-change ${avgs.glucose > 100 ? 'down' : 'up'}">${avgs.glucose > 100 ? 'Above normal' : 'Normal range'}</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">🔴</div>
+        <div class="stat-value">${avgs.haemoglobin}</div>
+        <div class="stat-label">Avg Haemoglobin (g/dL)</div>
+        <div class="stat-change ${avgs.haemoglobin < 12 ? 'down' : 'up'}">${avgs.haemoglobin < 12 ? 'Low – check anemia' : 'Normal range'}</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">💛</div>
+        <div class="stat-value">${avgs.cholesterol}</div>
+        <div class="stat-label">Avg Cholesterol (mg/dL)</div>
+        <div class="stat-change ${avgs.cholesterol > 199 ? 'down' : 'up'}">${avgs.cholesterol > 199 ? 'Borderline high' : 'Desirable range'}</div>
+      </div>
+      <div class="stat-card pink">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value">${s.total_patients}</div>
+        <div class="stat-label">Patients Analyzed</div>
+        <div class="stat-change up">AI-powered insights</div>
+      </div>
+    </div>
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Risk Score Distribution</div><div class="card-subtitle">Population risk breakdown</div></div></div>
+        <div class="chart-container"><canvas id="chart-analytics-risk"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Admission Trend</div><div class="card-subtitle">6-month patient intake</div></div></div>
+        <div class="chart-container"><canvas id="chart-analytics-trend"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Glucose Categories</div></div></div>
+        <div class="chart-container"><canvas id="chart-analytics-glucose"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Cholesterol Profile</div></div></div>
+        <div class="chart-container"><canvas id="chart-analytics-chol"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div><div class="card-title">Reference Ranges</div><div class="card-subtitle">Clinical normal values used in AI analysis</div></div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px">
+        ${[
+          {icon:'🩸',name:'Blood Glucose',ranges:[{l:'Hypoglycemia',v:'< 70 mg/dL',c:'var(--danger)'},{l:'Normal',v:'70–99 mg/dL',c:'var(--success)'},{l:'Pre-diabetic',v:'100–125 mg/dL',c:'var(--warn)'},{l:'Diabetic',v:'≥ 126 mg/dL',c:'var(--high)'}]},
+          {icon:'🔴',name:'Haemoglobin',ranges:[{l:'Severe Anemia',v:'< 8 g/dL',c:'var(--danger)'},{l:'Mild Anemia',v:'8–11.9 g/dL',c:'var(--warn)'},{l:'Normal',v:'12–17.5 g/dL',c:'var(--success)'},{l:'High',v:'> 17.5 g/dL',c:'var(--moderate)'}]},
+          {icon:'💛',name:'Cholesterol',ranges:[{l:'Desirable',v:'< 200 mg/dL',c:'var(--success)'},{l:'Borderline',v:'200–239 mg/dL',c:'var(--warn)'},{l:'High',v:'240–300 mg/dL',c:'var(--high)'},{l:'Very High',v:'> 300 mg/dL',c:'var(--danger)'}]},
+        ].map(metric => `
+          <div class="card" style="padding:16px">
+            <div style="font-size:24px;margin-bottom:10px">${metric.icon}</div>
+            <div style="font-family:var(--font-display);font-weight:700;margin-bottom:12px">${metric.name}</div>
+            ${metric.ranges.map(r=>`
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+                <span style="font-size:12px;color:var(--text2)">${r.l}</span>
+                <span style="font-size:12px;font-family:var(--font-mono);color:${r.c}">${r.v}</span>
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// ALERTS PAGE
+// ============================================================
+function renderAlerts() {
+  const alertColors = { critical: 'var(--critical)', high: 'var(--high)', moderate: 'var(--warn)', info: 'var(--accent)', success: 'var(--success)' };
+  const alertIcons = { critical:'🚨', high:'⚠️', moderate:'🟡', info:'ℹ️', success:'✅' };
+  return `
+  <div class="page">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <div><div class="card-title">Active Alerts</div><div class="card-subtitle">Patient health notifications requiring attention</div></div>
+        <span class="risk-badge risk-Critical">${state.alerts.filter(a=>a.type==='critical').length} Critical</span>
+      </div>
+      ${state.alerts.map(a => `
+        <div class="alert-item">
+          <div class="alert-dot" style="background:${alertColors[a.type] || 'var(--accent)'}"></div>
+          <div class="alert-content">
+            <div class="alert-title">${alertIcons[a.type]} ${a.title}</div>
+            <div class="alert-time">${a.time}${a.patient ? ` · Patient: ${a.patient}` : ''}</div>
+          </div>
+          ${a.patient ? `<button class="btn btn-secondary btn-sm" onclick="navigate('patients')">View →</button>` : ''}
+        </div>
+      `).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Alert Summary</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        ${[
+          {label:'Critical',count:state.alerts.filter(a=>a.type==='critical').length,color:'var(--critical)'},
+          {label:'High',count:state.alerts.filter(a=>a.type==='high').length,color:'var(--high)'},
+          {label:'Moderate',count:state.alerts.filter(a=>a.type==='moderate').length,color:'var(--moderate)'},
+          {label:'Info/OK',count:state.alerts.filter(a=>a.type==='info'||a.type==='success').length,color:'var(--success)'},
+        ].map(a=>`
+          <div style="text-align:center;padding:20px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border)">
+            <div style="font-family:var(--font-display);font-size:36px;font-weight:800;color:${a.color}">${a.count}</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:4px">${a.label}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// REPORTS PAGE
+// ============================================================
+function renderReports() {
+  const reports = [
+    { icon:'📊', name:'Patient Summary Report', desc:'Overview of all patient records with risk analysis' },
+    { icon:'🩸', name:'Glucose Analysis Report', desc:'Population-wide blood glucose trends and distribution' },
+    { icon:'💊', name:'Critical Risk Report', desc:'Patients flagged as High or Critical risk' },
+    { icon:'📈', name:'Monthly Admission Report', desc:'Patient intake trends over the past 6 months' },
+    { icon:'🧪', name:'Lab Values Report', desc:'Aggregated blood test results across all patients' },
+    { icon:'🤖', name:'AI Insights Report', desc:'Summary of AI predictions and health recommendations' },
+  ];
+  return `
+  <div class="page">
+    <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(59,158,255,0.1),rgba(0,229,200,0.05));border-color:rgba(59,158,255,0.2)">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="font-size:48px">📋</div>
+        <div>
+          <div class="card-title" style="font-size:20px">Health Reports Center</div>
+          <div style="color:var(--text2);margin-top:4px">Generate, view and export clinical reports for your patients</div>
+        </div>
+        <button class="btn btn-primary" style="margin-left:auto" onclick="generateReport()">Generate All Reports</button>
+      </div>
+    </div>
+    <div class="reports-grid">
+      ${reports.map(r => `
+        <div class="report-card" onclick="generateSpecificReport('${r.name}')">
+          <div class="report-icon">${r.icon}</div>
+          <div class="report-name">${r.name}</div>
+          <div class="report-desc">${r.desc}</div>
+          <br>
+          <span class="btn btn-secondary btn-sm">Generate →</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function generateReport() { toast('Generating all reports... (CSV export ready)', 'info'); exportCSV(); }
+function generateSpecificReport(name) { toast(`Generating: ${name}`, 'success'); }
+
+// ============================================================
+// ABOUT PAGE
+// ============================================================
+function renderAbout() {
+  const features = [
+    { icon:'🤖', title:'AI Health Analysis', desc:'Powered by Claude AI to analyze blood biomarkers and predict health conditions with clinical accuracy.' },
+    { icon:'📊', title:'Real-time Analytics', desc:'Interactive charts and dashboards providing instant insight into population health trends.' },
+    { icon:'🔒', title:'Secure Authentication', desc:'Role-based access control with encrypted credentials and session management.' },
+    { icon:'💾', title:'Persistent Storage', desc:'SQLite database with full CRUD operations and automatic data seeding on startup.' },
+    { icon:'🔔', title:'Smart Alerts', desc:'Automated notifications for critical and high-risk patients requiring urgent attention.' },
+    { icon:'📋', title:'Report Generation', desc:'Export patient data and analytics in CSV format for clinical documentation.' },
+  ];
+  return `
+  <div class="page">
+    <div class="about-hero">
+      <h1>HealthPulse</h1>
+      <p>An AI-powered health intelligence platform for managing patient blood test results, predicting health conditions, and visualizing clinical data at scale.</p>
+    </div>
+    <div class="feature-grid">
+      ${features.map(f=>`
+        <div class="feature-card">
+          <div class="feature-icon">${f.icon}</div>
+          <div class="feature-title">${f.title}</div>
+          <div class="feature-desc">${f.desc}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">Tech Stack</div>
+        ${[
+          {l:'Backend',v:'Python Flask + SQLAlchemy'},
+          {l:'Frontend',v:'HTML5 + CSS3 + Vanilla JS'},
+          {l:'Database',v:'SQLite (persistent)'},
+          {l:'AI Engine',v:'Claude AI (Anthropic) + Rule-based fallback'},
+          {l:'Charts',v:'Chart.js 4.x'},
+          {l:'Auth',v:'bcrypt + Flask Sessions'},
+        ].map(r=>`
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px">
+            <span style="color:var(--text3)">${r.l}</span>
+            <span style="color:var(--accent2);font-family:var(--font-mono);font-size:12px">${r.v}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">AI Health Markers Analyzed</div>
+        ${[
+          {l:'Blood Glucose',v:'Diabetes & pre-diabetes detection'},
+          {l:'Haemoglobin',v:'Anemia & polycythemia detection'},
+          {l:'Total Cholesterol',v:'Cardiovascular risk assessment'},
+          {l:'Combined Score',v:'Overall health risk 0–100'},
+        ].map(r=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:14px;font-weight:600">${r.l}</span>
+            <span style="font-size:12px;color:var(--text2);max-width:55%;text-align:right">${r.v}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// SETTINGS PAGE
+// ============================================================
+function renderSettings() {
+  return `
+  <div class="page">
+    <div class="settings-section">
+      <div class="settings-title">Profile</div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+          <div style="width:64px;height:64px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px">${state.user?.avatar||'👨‍⚕️'}</div>
+          <div>
+            <div style="font-family:var(--font-display);font-size:20px;font-weight:700">${state.user?.name}</div>
+            <div style="color:var(--text2);font-size:14px">${state.user?.email}</div>
+            <div style="margin-top:4px"><span class="risk-badge risk-Low">${state.user?.role}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-title">Notifications</div>
+      ${[
+        {label:'Critical risk alerts', desc:'Notify when patient risk is Critical', on:true},
+        {label:'High risk alerts', desc:'Notify when patient risk is High', on:true},
+        {label:'New patient admissions', desc:'Alert on new patient added', on:false},
+        {label:'Weekly reports', desc:'Receive weekly summary digest', on:false},
+      ].map(s=>`
+        <div class="settings-row">
+          <div>
+            <div style="font-size:14px;font-weight:500">${s.label}</div>
+            <div style="font-size:12px;color:var(--text3)">${s.desc}</div>
+          </div>
+          <div class="toggle ${s.on?'on':''}" onclick="this.classList.toggle('on');toast('Setting updated','success')"></div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="settings-section">
+      <div class="settings-title">Data Management</div>
+      <div class="settings-row">
+        <div>
+          <div style="font-size:14px;font-weight:500">Export All Data</div>
+          <div style="font-size:12px;color:var(--text3)">Download all patient records as CSV</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div style="font-size:14px;font-weight:500">Re-analyze All Patients</div>
+          <div style="font-size:12px;color:var(--text3)">Run AI prediction on all existing records</div>
+        </div>
+        <button class="btn btn-success btn-sm" onclick="toast('Re-analysis queued for all patients','info')">Run AI Analysis</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function renderModals() {
+  return `
+    ${renderPatientModal()}
+    ${renderViewModal()}
+    ${renderDeleteModal()}
+  `;
+}
+
+function renderPatientModal() {
+  const isEdit = state.showEditModal;
+  const p = isEdit ? state.editPatient : null;
+  const show = state.showAddModal || state.showEditModal;
+  return `
+  <div class="modal-overlay ${show?'':'hidden'}" id="patient-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">${isEdit?'✏️ Edit Patient':'➕ Add New Patient'}</div>
+        <button class="modal-close" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" class="form-input" id="f-name" value="${p?p.full_name:''}" placeholder="John Doe">
+            <span class="form-error" id="err-full_name"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth *</label>
+            <input type="date" class="form-input" id="f-dob" value="${p?p.date_of_birth:''}" max="${new Date().toISOString().split('T')[0]}">
+            <span class="form-error" id="err-date_of_birth"></span>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Email Address *</label>
+            <input type="email" class="form-input" id="f-email" value="${p?p.email:''}" placeholder="patient@example.com">
+            <span class="form-error" id="err-email"></span>
+          </div>
+          <hr class="form-divider">
+          <div class="form-group full">
+            <div class="normal-ranges">
+              <b>Normal Reference Ranges:</b> Glucose: 70–99 mg/dL &nbsp;|&nbsp; Haemoglobin: 12–17.5 g/dL &nbsp;|&nbsp; Cholesterol: &lt;200 mg/dL
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Glucose (mg/dL) *</label>
+            <input type="number" class="form-input" id="f-glucose" value="${p?p.glucose:''}" placeholder="e.g. 95" step="0.1" min="0">
+            <span class="form-error" id="err-glucose"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Haemoglobin (g/dL) *</label>
+            <input type="number" class="form-input" id="f-hgb" value="${p?p.haemoglobin:''}" placeholder="e.g. 13.5" step="0.1" min="0">
+            <span class="form-error" id="err-haemoglobin"></span>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Cholesterol (mg/dL) *</label>
+            <input type="number" class="form-input" id="f-chol" value="${p?p.cholesterol:''}" placeholder="e.g. 185" step="0.1" min="0">
+            <span class="form-error" id="err-cholesterol"></span>
+          </div>
+          ${isEdit && p?.remarks ? `
+          <div class="form-group full">
+            <label class="form-label">
+              <span class="ai-label"><span class="ai-dot"></span>AI Analysis (Previous)</span>
+            </label>
+            <div class="remarks-box">${p.remarks}</div>
+          </div>` : ''}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+        <button class="btn btn-primary" id="save-btn" onclick="${isEdit?`updatePatient(${p?.id})`:'savePatient()'}">
+          ${isEdit?'💾 Update & Re-analyze':'🤖 Save & Analyze'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderViewModal() {
+  const p = state.viewPatient;
+  const show = state.showViewModal && p;
+  if (!show) return `<div class="modal-overlay hidden" id="view-modal"></div>`;
+
+  const scoreClass = p.risk_level==='Low'?'low':p.risk_level==='Moderate'?'moderate':p.risk_level==='High'?'high':'critical';
+  return `
+  <div class="modal-overlay" id="view-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">👤 ${p.full_name}</div>
+          <div style="margin-top:4px"><span class="risk-badge risk-${p.risk_level}">● ${p.risk_level} Risk</span></div>
+        </div>
+        <button class="modal-close" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+          <div style="font-size:13px;color:var(--text2)">Email</div><div style="font-size:13px">${p.email}</div>
+          <div style="font-size:13px;color:var(--text2)">Date of Birth</div><div style="font-size:13px">${p.date_of_birth} (${p.age} yrs)</div>
+          <div style="font-size:13px;color:var(--text2)">Added</div><div style="font-size:13px">${new Date(p.created_at).toLocaleDateString()}</div>
+          <div style="font-size:13px;color:var(--text2)">Last Updated</div><div style="font-size:13px">${p.updated_at?new Date(p.updated_at).toLocaleDateString():'—'}</div>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="label">Glucose</div>
+            <div class="val" style="color:${p.glucose>125?'var(--danger)':p.glucose>99?'var(--warn)':'var(--success)'}">${p.glucose}</div>
+            <div class="unit">mg/dL</div>
+          </div>
+          <div class="detail-item">
+            <div class="label">Haemoglobin</div>
+            <div class="val" style="color:${p.haemoglobin<12?'var(--danger)':p.haemoglobin<13?'var(--warn)':'var(--success)'}">${p.haemoglobin}</div>
+            <div class="unit">g/dL</div>
+          </div>
+          <div class="detail-item">
+            <div class="label">Cholesterol</div>
+            <div class="val" style="color:${p.cholesterol>239?'var(--danger)':p.cholesterol>199?'var(--warn)':'var(--success)'}">${p.cholesterol}</div>
+            <div class="unit">mg/dL</div>
+          </div>
+        </div>
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Risk Score: ${Math.round(p.risk_score)}/100</div>
+          <div class="bar-track" style="height:10px">
+            <div class="bar-fill ${scoreClass}" style="width:${p.risk_score}%"></div>
+          </div>
+        </div>
+        <div>
+          <div class="ai-label"><span class="ai-dot"></span>AI Health Analysis</div>
+          <div class="remarks-box">${p.remarks || 'No analysis available. Click Re-analyze to generate.'}</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModals()">Close</button>
+        <button class="btn btn-success" onclick="reanalyze(${p.id})">🔄 Re-analyze</button>
+        <button class="btn btn-primary" onclick="openEditModal(${p.id})">✏️ Edit</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDeleteModal() {
+  return `
+  <div class="modal-overlay ${state.showDeleteModal?'':'hidden'}" id="delete-modal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <div class="modal-title">🗑 Delete Patient</div>
+        <button class="modal-close" onclick="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--text2);font-size:14px;line-height:1.6">
+          Are you sure you want to delete this patient record? This action is <strong style="color:var(--danger)">permanent and cannot be undone</strong>.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModals()">Cancel</button>
+        <button class="btn btn-danger" onclick="deletePatient(${state.deleteId})">Delete Permanently</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// PATIENT ACTIONS
+// ============================================================
+function openAddModal() {
+  state.showAddModal = true;
+  state.showEditModal = false;
+  state.editPatient = null;
+  render();
+}
+
+async function openEditModal(id) {
+  try {
+    const data = await api('GET', `/patients/${id}`);
+    state.editPatient = data.patient;
+    state.showEditModal = true;
+    state.showAddModal = false;
+    state.showViewModal = false;
+    render();
+  } catch(e) { toast('Failed to load patient', 'error'); }
+}
+
+async function viewPatient(id) {
+  try {
+    const data = await api('GET', `/patients/${id}`);
+    state.viewPatient = data.patient;
+    state.showViewModal = true;
+    state.showAddModal = false;
+    state.showEditModal = false;
+    render();
+  } catch(e) { toast('Failed to load patient', 'error'); }
+}
+
+function confirmDelete(id) {
+  state.deleteId = id;
+  state.showDeleteModal = true;
+  render();
+}
+
+function closeModals() {
+  state.showAddModal = false;
+  state.showEditModal = false;
+  state.showViewModal = false;
+  state.showDeleteModal = false;
+  state.editPatient = null;
+  state.viewPatient = null;
+  state.deleteId = null;
+  render();
+}
+
+function getFormData() {
+  return {
+    full_name: document.getElementById('f-name')?.value || '',
+    date_of_birth: document.getElementById('f-dob')?.value || '',
+    email: document.getElementById('f-email')?.value || '',
+    glucose: document.getElementById('f-glucose')?.value || '',
+    haemoglobin: document.getElementById('f-hgb')?.value || '',
+    cholesterol: document.getElementById('f-chol')?.value || '',
+  };
+}
+
+function showFormErrors(errors) {
+  Object.entries(errors).forEach(([field, msg]) => {
+    const el = document.getElementById(`err-${field}`);
+    if (el) el.textContent = msg;
+    const inp = document.getElementById(`f-${field.replace('full_name','name').replace('date_of_birth','dob').replace('haemoglobin','hgb').replace('cholesterol','chol')}`);
+    if (inp) inp.classList.add('error');
+  });
+}
+
+async function savePatient() {
+  const btn = document.getElementById('save-btn');
+  if (btn) { btn.textContent = '⏳ Analyzing...'; btn.disabled = true; }
+
+  // Clear errors
+  ['full_name','date_of_birth','email','glucose','haemoglobin','cholesterol'].forEach(f => {
+    const el = document.getElementById(`err-${f}`);
+    if (el) el.textContent = '';
+  });
+
+  try {
+    const data = await api('POST', '/patients/', getFormData());
+    toast('Patient added and analyzed successfully!', 'success');
+    closeModals();
+    loadPatients();
+    loadDashboard();
+  } catch(e) {
+    if (e.errors) showFormErrors(e.errors);
+    else toast(e.error || 'Failed to save patient', 'error');
+    if (btn) { btn.textContent = '🤖 Save & Analyze'; btn.disabled = false; }
+  }
+}
+
+async function updatePatient(id) {
+  const btn = document.getElementById('save-btn');
+  if (btn) { btn.textContent = '⏳ Updating...'; btn.disabled = true; }
+  try {
+    const data = await api('PUT', `/patients/${id}`, getFormData());
+    toast('Patient updated successfully!', 'success');
+    closeModals();
+    loadPatients();
+    loadDashboard();
+  } catch(e) {
+    if (e.errors) showFormErrors(e.errors);
+    else toast(e.error || 'Failed to update patient', 'error');
+    if (btn) { btn.textContent = '💾 Update & Re-analyze'; btn.disabled = false; }
+  }
+}
+
+async function deletePatient(id) {
+  try {
+    await api('DELETE', `/patients/${id}`);
+    toast('Patient deleted', 'success');
+    closeModals();
+    loadPatients();
+    loadDashboard();
+  } catch(e) { toast('Failed to delete patient', 'error'); }
+}
+
+async function reanalyze(id) {
+  toast('Running AI analysis...', 'info');
+  try {
+    const data = await api('POST', `/patients/${id}/reanalyze`);
+    state.viewPatient = data.patient;
+    toast('Analysis updated!', 'success');
+    render();
+  } catch(e) { toast('Analysis failed', 'error'); }
+}
+
+// ============================================================
+// LOAD DATA
+// ============================================================
+async function loadPatients() {
+  state.loading = true;
+  if (state.page === 'patients') {
+    document.getElementById('page-content').innerHTML = renderPage();
+  }
+  try {
+    const params = new URLSearchParams({
+      page: state.currentPage,
+      per_page: 10,
+      search: state.search,
+      risk: state.riskFilter,
+      sort: state.sortBy,
+      dir: state.sortDir,
+    });
+    const data = await api('GET', `/patients/?${params}`);
+    state.patients = data.patients;
+    state.totalPatients = data.total;
+    state.totalPages = data.pages;
+  } catch(e) { toast('Failed to load patients', 'error'); }
+  state.loading = false;
+  if (state.page === 'patients') {
+    document.getElementById('page-content').innerHTML = renderPage();
+    attachEvents();
+  }
+}
+
+async function loadDashboard() {
+  try {
+    const data = await api('GET', '/dashboard/stats');
+    state.dashStats = data;
+    if (state.page === 'dashboard' || state.page === 'analytics') {
+      document.getElementById('page-content').innerHTML = renderPage();
+      attachEvents();
+      renderCharts();
+    }
+  } catch(e) { console.error('Dashboard load error:', e); }
+}
+
+// ============================================================
+// SORTING, FILTERING, PAGINATION
+// ============================================================
+let searchTimeout;
+function debounceSearch(val) {
+  state.search = val;
+  state.currentPage = 1;
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(loadPatients, 400);
+}
+
+function filterByRisk(val) {
+  state.riskFilter = val;
+  state.currentPage = 1;
+  loadPatients();
+}
+
+function sortBy(col) {
+  if (state.sortBy === col) {
+    state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    state.sortBy = col;
+    state.sortDir = 'asc';
+  }
+  loadPatients();
+}
+
+function goPage(n) {
+  if (n < 1 || n > state.totalPages) return;
+  state.currentPage = n;
+  loadPatients();
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+Chart.defaults.color = '#7a9cc7';
+Chart.defaults.borderColor = 'rgba(99,179,255,0.1)';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+function destroyChart(id) {
+  const existing = Chart.getChart(id);
+  if (existing) existing.destroy();
+}
+
+function renderCharts() {
+  const s = state.dashStats;
+  if (!s) return;
+
+  if (state.page === 'dashboard') {
+    // Risk doughnut
+    destroyChart('chart-risk');
+    const riskCtx = document.getElementById('chart-risk');
+    if (riskCtx) {
+      new Chart(riskCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Low', 'Moderate', 'High', 'Critical'],
+          datasets: [{
+            data: [s.risk_distribution.Low||0, s.risk_distribution.Moderate||0, s.risk_distribution.High||0, s.risk_distribution.Critical||0],
+            backgroundColor: ['#00d68f33','#ffb84d33','#ff6b2b33','#ff2d5533'],
+            borderColor: ['#00d68f','#ffb84d','#ff6b2b','#ff2d55'],
+            borderWidth: 2,
+          }]
+        },
+        options: { plugins: { legend: { position: 'right' } }, cutout: '65%' }
+      });
+    }
+
+    // Monthly line
+    destroyChart('chart-monthly');
+    const mCtx = document.getElementById('chart-monthly');
+    if (mCtx && s.monthly_trend) {
+      new Chart(mCtx, {
+        type: 'line',
+        data: {
+          labels: s.monthly_trend.map(m => m.month),
+          datasets: [{
+            label: 'Admissions',
+            data: s.monthly_trend.map(m => m.count),
+            borderColor: '#3b9eff',
+            backgroundColor: 'rgba(59,158,255,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#3b9eff',
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+    }
+
+    // Glucose bar
+    destroyChart('chart-glucose');
+    const gCtx = document.getElementById('chart-glucose');
+    if (gCtx && s.glucose_distribution) {
+      new Chart(gCtx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(s.glucose_distribution),
+          datasets: [{
+            data: Object.values(s.glucose_distribution),
+            backgroundColor: ['#3b9eff33','#00d68f33','#ffb84d33','#ff6b2b33','#ff2d5533'],
+            borderColor: ['#3b9eff','#00d68f','#ffb84d','#ff6b2b','#ff2d55'],
+            borderWidth: 2,
+            borderRadius: 6,
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+    }
+
+    // Cholesterol bar
+    destroyChart('chart-chol');
+    const cCtx = document.getElementById('chart-chol');
+    if (cCtx && s.cholesterol_distribution) {
+      new Chart(cCtx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(s.cholesterol_distribution),
+          datasets: [{
+            data: Object.values(s.cholesterol_distribution),
+            backgroundColor: ['#00d68f33','#ffb84d33','#ff6b2b33','#ff2d5533'],
+            borderColor: ['#00d68f','#ffb84d','#ff6b2b','#ff2d55'],
+            borderWidth: 2,
+            borderRadius: 6,
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+    }
+  }
+
+  if (state.page === 'analytics') {
+    destroyChart('chart-analytics-risk');
+    const arCtx = document.getElementById('chart-analytics-risk');
+    if (arCtx) {
+      new Chart(arCtx, {
+        type: 'polarArea',
+        data: {
+          labels: ['Low', 'Moderate', 'High', 'Critical'],
+          datasets: [{
+            data: [s.risk_distribution.Low||0, s.risk_distribution.Moderate||0, s.risk_distribution.High||0, s.risk_distribution.Critical||0],
+            backgroundColor: ['rgba(0,214,143,0.5)','rgba(255,184,77,0.5)','rgba(255,107,43,0.5)','rgba(255,45,85,0.5)'],
+            borderColor: ['#00d68f','#ffb84d','#ff6b2b','#ff2d55'],
+          }]
+        },
+        options: { plugins: { legend: { position: 'right' } } }
+      });
+    }
+
+    destroyChart('chart-analytics-trend');
+    const atCtx = document.getElementById('chart-analytics-trend');
+    if (atCtx && s.monthly_trend) {
+      new Chart(atCtx, {
+        type: 'bar',
+        data: {
+          labels: s.monthly_trend.map(m => m.month),
+          datasets: [{
+            label: 'Patients',
+            data: s.monthly_trend.map(m => m.count),
+            backgroundColor: 'rgba(59,158,255,0.3)',
+            borderColor: '#3b9eff',
+            borderWidth: 2,
+            borderRadius: 6,
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+    }
+
+    destroyChart('chart-analytics-glucose');
+    const agCtx = document.getElementById('chart-analytics-glucose');
+    if (agCtx && s.glucose_distribution) {
+      new Chart(agCtx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(s.glucose_distribution),
+          datasets: [{
+            data: Object.values(s.glucose_distribution),
+            backgroundColor: ['#3b9eff33','#00d68f33','#ffb84d33','#ff6b2b33','#ff2d5533'],
+            borderColor: ['#3b9eff','#00d68f','#ffb84d','#ff6b2b','#ff2d55'],
+            borderWidth: 2,
+          }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } }, cutout: '55%' }
+      });
+    }
+
+    destroyChart('chart-analytics-chol');
+    const acCtx = document.getElementById('chart-analytics-chol');
+    if (acCtx && s.cholesterol_distribution) {
+      new Chart(acCtx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(s.cholesterol_distribution),
+          datasets: [{
+            data: Object.values(s.cholesterol_distribution),
+            backgroundColor: ['#00d68f33','#ffb84d33','#ff6b2b33','#ff2d5533'],
+            borderColor: ['#00d68f','#ffb84d','#ff6b2b','#ff2d55'],
+            borderWidth: 2,
+          }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } }, cutout: '55%' }
+      });
+    }
+  }
+}
+
+// ============================================================
+// EXPORT CSV
+// ============================================================
+async function exportCSV() {
+  try {
+    const data = await api('GET', '/patients/?page=1&per_page=1000');
+    const rows = [
+      ['ID','Name','DOB','Email','Glucose','Haemoglobin','Cholesterol','Risk Level','Risk Score','Remarks'],
+      ...data.patients.map(p => [p.id, p.full_name, p.date_of_birth, p.email, p.glucose, p.haemoglobin, p.cholesterol, p.risk_level, p.risk_score, `"${(p.remarks||'').replace(/"/g,'""')}"`])
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'healthpulse_patients.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    toast('CSV exported successfully!', 'success');
+  } catch(e) { toast('Export failed', 'error'); }
+}
+
+// ============================================================
+// EVENT ATTACHMENT
+// ============================================================
+function attachEvents() {
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModals();
+  }, { once: true });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  try {
+    const data = await api('GET', '/auth/me');
+    state.user = data.user;
+    state.page = 'dashboard';
+    render();
+    loadDashboard();
+    loadPatients();
+  } catch(e) {
+    state.page = 'login';
+    render();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
