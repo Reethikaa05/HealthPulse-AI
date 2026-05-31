@@ -1,5 +1,7 @@
 # 💊 HealthPulse — AI-Powered Health Intelligence Platform
 
+![HealthPulse Platform Banner](Screenshot/Screenshot_31-5-2026_19481_localhost.jpeg)
+
 HealthPulse is a high-performance, full-stack health prediction web application designed to analyze patient blood biomarkers (Glucose, Haemoglobin, Cholesterol) and predict metabolic risk profiles using modern AI models and clinical rule engines.
 
 ---
