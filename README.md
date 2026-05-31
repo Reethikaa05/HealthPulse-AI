@@ -1,6 +1,12 @@
 # 💊 HealthPulse — AI-Powered Health Intelligence Platform
 
-![HealthPulse Platform Banner](Screenshot/Screenshot_31-5-2026_19481_localhost.jpeg)
+## 🛠️ Core Skills & Technologies Showcased
+A highly optimized full-stack clinical dashboard demonstrating expert capability in:
+* **🤖 Artificial Intelligence & Decision Engines**: Anthropic Claude API Integration & Custom Rule-Based Medical Expert Fallback.
+* **⚡ Modern Backend Engineering**: Python, Flask REST API Development, SQLite & SQLAlchemy ORM Database Schemas.
+* **🔒 Clinical Security & Auth**: Password hashing using `bcrypt`, Flask Session State Management, and secure CORS controls.
+* **🎨 Premium Responsive UI Design**: Advanced HSL-based styling, glassmorphism aesthetics, Vanilla ES6 JavaScript, and modular components.
+* **📊 Scientific Data Visualization**: High-performance Chart.js 4.x integration mapping complex multi-dimensional medical statistics.
 
 HealthPulse is a high-performance, full-stack health prediction web application designed to analyze patient blood biomarkers (Glucose, Haemoglobin, Cholesterol) and predict metabolic risk profiles using modern AI models and clinical rule engines.
 
@@ -41,7 +47,7 @@ Below are actual screenshots from the HealthPulse application showing the respon
 HealthPulse is engineered as a secure, decoupling-friendly full-stack application. Below is the system architecture showing how user requests, database storage, and AI analysis pipelines interact.
 
 ```mermaid
-graph TD
+flowchart TD
     %% Frontend Components
     subgraph Frontend [Client Browser / Frontend]
         SPA[HTML5 / CSS3 / Vanilla JS SPA]
@@ -58,7 +64,6 @@ graph TD
         CRUD[Patient Data Controller]
         AI[AI Health Intelligence Engine]
 
-        Fetch <-->|JSON HTTPS / CORS| API
         API --> Auth
         API --> CRUD
         API --> AI
@@ -67,18 +72,21 @@ graph TD
     %% Database Component
     subgraph Storage [Persistent Storage]
         DB[(SQLite Database via SQLAlchemy)]
-        CRUD <--> DB
-        Auth <--> DB
     end
 
     %% External Services
     subgraph AIService [AI Analysis Routing]
         Claude[Anthropic Claude Sonnet API]
         RuleEngine[Rule-Based Fallback Engine]
-        
-        AI -->|If ANTHROPIC_API_KEY set| Claude
-        AI -->|Else Fallback| RuleEngine
     end
+
+    %% Connections
+    Fetch -->|JSON / CORS Request| API
+    API -->|JSON Response| Fetch
+    CRUD -->|ORM Read / Write| DB
+    Auth -->|ORM Session Query| DB
+    AI -->|If ANTHROPIC_API_KEY set| Claude
+    AI -->|Else Fallback| RuleEngine
 
     classDef front fill:#1a1c23,stroke:#3b82f6,stroke-width:2px,color:#fff;
     classDef back fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#fff;
