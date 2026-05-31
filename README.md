@@ -1,5 +1,9 @@
 # 💊 HealthPulse — AI-Powered Health Intelligence Platform
 
+### 🚀 Live Deployments
+* **🖥️ Live Production App**: [https://health-pulse-ai-7sw4.vercel.app](https://health-pulse-ai-7sw4.vercel.app)
+* **⚙️ Backend API Service**: [https://healthpulse-ai-alvv.onrender.com](https://healthpulse-ai-alvv.onrender.com)
+
 ## 🛠️ Core Skills & Technologies Showcased
 A highly optimized full-stack clinical dashboard demonstrating expert capability in:
 * **🤖 Artificial Intelligence & Decision Engines**: Anthropic Claude API Integration & Custom Rule-Based Medical Expert Fallback.
